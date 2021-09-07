@@ -4,6 +4,37 @@
 
 The StorageOS Operator metadata for Kubernetes and OpenShift.
 
+## StorageOS Operator Release Process
+
+To publish a new operator release to Red Hat Connect, you must add an image list
+file with all the related images to be populated in the bundle.
+
+These related images are the default images used by the operator. The image list
+must be created inside a package directory with the name format
+`imagelist-<bundle-version>.yaml`, e.g. `imagelist-2.2.0.yaml`. The images
+should be listed as:
+
+```yaml
+- name: RELATED_IMAGE_STORAGEOS_NODE
+  value: registry.connect.redhat.com/storageos/node:v2.2.0
+- name: RELATED_IMAGE_STORAGEOS_INIT
+  value: registry.connect.redhat.com/storageos/init:v2.0.0
+...
+```
+
+All image references in the image list must:
+
+- be hosted under `registry.connect.redhat.com/storageos`.
+- have passed certification scanning.
+- be published.
+
+Once images availability have been verified using `docker pull`, create a PR for
+the new image list and merge into master.  Github Actions will perform the
+remaining steps.
+
+Logon to Red Hat Connect and verify that the certification process completed,
+and publish when ready.
+
 ## OLM Bundle
 
 Directory `storageos2` contains [OLM](https://olm.operatorframework.io/)
@@ -13,7 +44,7 @@ be used to create index image using
 [operator-registry](https://github.com/operator-framework/operator-registry)
 tool, `opm`.
 
-### Generate a new versioned bundle
+### Manual bundle creation process
 
 Before generating a new bundle, create an image list file with all the related
 images to be populated in the bundle. These related images are the default
@@ -33,7 +64,7 @@ Once the image list has been created, to create a bundle or update an existing
 bundle, run:
 
 ```console
-$ make generate-bundle BUNDLE_VERSION=<version-number> OPERATOR_BRANCH=v<version-number>
+make generate-bundle BUNDLE_VERSION=<version-number> OPERATOR_BRANCH=v<version-number>
 ```
 
 This will run the bundle generator tool which will clone the default operator
@@ -45,7 +76,7 @@ operator to create or update a versioned bundle in this repo.
 Build a bundle image for `storageos2` package for version `2.2.0`:
 
 ```console
-$ make bundle-build PACKAGE_NAME=storageos2 BUNDLE_VERSION=2.2.0
+make bundle-build PACKAGE_NAME=storageos2 BUNDLE_VERSION=2.2.0
 ...
 Successfully tagged storageos/operator-bundle:v2.2.0
 ```
@@ -168,13 +199,13 @@ storageos2  default    storageos2    storageosoperator.v2.2.0  storageosoperator
 
 Validate a specific bundle image using opm:
 
-```
-$ make opm-validate BUNDLE_IMAGE=storageos/operator-bundle:test
+```console
+make opm-validate BUNDLE_IMAGE=storageos/operator-bundle:test
 ```
 
 Validate a specific bundle with the [OPA](https://www.openpolicyagent.org/)
 based repo policies using [conftest](https://www.conftest.dev):
 
-```
-$ make conftest-validate BUNDLE_VERSION=2.2.0
+```console
+make conftest-validate BUNDLE_VERSION=2.2.0
 ```
