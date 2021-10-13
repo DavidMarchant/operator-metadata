@@ -21,7 +21,7 @@ on:
         required: true
       operatorRepo:
         description: Operator git repo to extract metadata from.
-        default: https://github.com/storageos/cluster-operator
+        default: https://github.com/storageos/operator
         required: true
       operatorBranch:
         description: Operator git repo branch or tag to clone.
